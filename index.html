@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voice-Activated Chatbot with ChatGPT</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    h1 {
+      margin-top: 50px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 15px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    #microphone-button {
+      background-color: #2196F3;
+    }
+    #response {
+      margin-top: 50px;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Voice-Activated Chatbot with ChatGPT by <b>SRAVstudios</b></h1>
+  <button id="microphone-button"><i class="fa fa-microphone"></i></button>
+  <div id="response"></div>
+  <script>
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+ 
+    let finalTranscript = '';
+    recognition.onresult = event => {
+      let interimTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript;
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+ 
+      if (finalTranscript !== '') {
+        sendRequest(finalTranscript);
+      }
+    };
+ 
+    recognition.onerror = event => {
+      console.error(event.error);
+    };
+ 
+    document.querySelector('#microphone-button').addEventListener('click', () => {
+      recognition.start();
+    });
+ 
+    const API_ENDPOINT = 'https://api.openai.com/v1/engines/davinci-codex/completions';
+ 
+    const sendRequest = async input => {
+      const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${YOUR_API_KEY}`,
+        },
+        body: JSON.stringify({
+          prompt: input,
+          max_tokens: 60,
+          n: 1,
+          stop: null,
+          temperature: 0.5,
+        }),
+      });
+ 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+ 
+      const data = await response.json();
+      const message = data.choices[0].text.trim();
+      speak(message);
+    };
+ 
+    const synth = window.speechSynthesis;
+ 
+    const speak = message => {
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.voice = synth.getVoices()[0];
+      synth.speak(utterance);
+      document.querySelector('#response').textContent = message;
+    };
+  </script>
+
+</body>
+</html>
+<!--
+BTC - bc1q5kmqqynratseyh7v0n8q58rn7p5xejuemmc4px
+
+USDT(ETH) - 0x8558288490E11E7F900471E7D52F0b0A0B6b8572
+
+USDT(SOLANA) - 4MjmiAwiQT1cqb5fSpvdsKCabZAKxopcMsTqem9gWBqB
+
+USDT(POLYGON) - 0x8558288490E11E7F900471E7D52F0b0A0B6b8572
+
+ETH - 0x8558288490E11E7F900471E7D52F0b0A0B6b8572
+-->
